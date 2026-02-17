@@ -77,7 +77,6 @@ socket.on("new-appointment", (newAppointment) => {
   loadAppointments();
 });
 
-
     socket.on("connect_error", (err) => {
       console.error("Socket connection error:", err.message);
     });
@@ -90,7 +89,7 @@ socket.on("new-appointment", (newAppointment) => {
     try {
       // await axios.put(`http://localhost:5000/update-status/${id}`,
 
-      await axios.put(`/api/update-status/${id}`,
+      await axios.put(`/${API}/update-status/${id}`,
         { status },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
