@@ -58,7 +58,8 @@ function Doctor() {
   useEffect(() => {
     if (!user || !user.token) return;
 
-    const socket = io("http://localhost:5000", {
+      const socket = io("https://hospitalmgt-backend.onrender.com", {
+    // const socket = io("http://localhost:5000", {
                                                 auth: { token: user.token }
                                               });
 
