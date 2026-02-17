@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 
+const API = "https://hospitalmgt-backend.onrender.com";
+
 function Doctor() {
   const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
@@ -24,7 +26,9 @@ function Doctor() {
   const loadAppointments = async () => {
     try {
       //const res = await axios.get("http://localhost:5000/doctor-appointments", {
+
       const res = await axios.get("/api/doctor-appointments", {
+
         headers: { Authorization: `Bearer ${user.token}` }
       });
 

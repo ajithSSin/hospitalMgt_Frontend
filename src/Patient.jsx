@@ -89,14 +89,14 @@ function Patient() {
         }
       );
 
-      alert(res.data.message || "Booked Successfully ✅");
+      alert(res.data.message || "Booked Successfully ");
 
       setForm({ doctorId: "", date: "", time: "" });
       setErrors({});
       loadAppointments();
     } catch (err) {
       console.error(err);
-      alert("Booking failed ❌");
+      alert("Booking failed ");
     } finally {
       setLoading(false);
     }

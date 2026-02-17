@@ -22,11 +22,11 @@ function Register() {
 
     try {
       await axios.post(`${API}/register`, form);
-      alert("Registered Successfully ✅");
+      alert("Registered Successfully ");
       navigate("/");
     } catch (err) {
       console.error("Registration error:", err);
-      alert("Registration failed ❌");
+      alert("Registration failed ");
     }
   };
 
@@ -49,7 +49,7 @@ function Register() {
         />
 
         <input
-          type="text"   // ✅ fixed (was empty)
+          type="text"   // fixed (was empty)
           placeholder="Username"
           value={form.user}
           onChange={(e) =>

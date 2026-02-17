@@ -65,12 +65,12 @@ function Admin() {
         }
       );
 
-      alert("Doctor added successfully ✅");
+      alert("Doctor added successfully");
       setDoctor({ name: "", specialization: "", userId: "" });
       loadDoctors();
     } catch (err) {
       console.error("Add Doctor Error:", err);
-      alert("Failed to add doctor ❌");
+      alert("Failed to add doctor ");
     }
   };
 
