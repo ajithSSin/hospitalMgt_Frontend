@@ -27,7 +27,7 @@ function Doctor() {
     try {
       //const res = await axios.get("http://localhost:5000/doctor-appointments", {
 
-      const res = await axios.get("/api/doctor-appointments", {
+      const res = await axios.get(`${API}/doctor-appointments`, {
 
         headers: { Authorization: `Bearer ${user.token}` }
       });
