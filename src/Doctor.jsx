@@ -5,90 +5,74 @@ import { io } from "socket.io-client";
 
 const API = "https://hospitalmgt-backend.onrender.com";
 
-
 function Doctor() {
   const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // ////////// CHECK SESSION & ROLE //////////////
-  //To prevents unauthorized access.
+  // ==========================
+  // CHECK AUTH & ROLE
+  // ==========================
   useEffect(() => {
-    //check if user exits
     if (!user || !user.token || user.role !== "doctor") {
       alert("Unauthorized access. Please login as doctor.");
       localStorage.removeItem("user");
       navigate("/");
       return;
     }
+
     loadAppointments();
-  }, []);
+  }, [navigate]);
 
-  //// LOAD APPOINTMENTS //////////
+  // ==========================
+  // LOAD APPOINTMENTS
+  // ==========================
   const loadAppointments = async () => {
-  try {
-    // Check if user exists
-    if (!user || !user.token) {
-      navigate("/");
-      return;
-    }
+    try {
+      const res = await axios.get(`${API}/doctor-appointments`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
 
-    const res = await axios.get(`${API}/doctor-appointments`, {
-      headers: {
-        Authorization: `Bearer ${user.token}`,
-      },
-    });
+      setAppointments(res.data || []);
+    } catch (err) {
+      const status = err.response?.status;
+      const message = err.response?.data?.message || "Server error";
 
-    console.log("Appointments response:", res.data);
-
-    // Directly set if backend sends array
-    setAppointments(res.data);
-
-  } catch (err) {
-    console.error("Network/Server error:", err);
-
-    const status = err.response?.status;
-    const message = err.response?.data?.message || "Something went wrong";
-
-    console.log("Status:", status);
-    console.log("Message:", message);
-
-    // Handle authentication errors properly
-    if (status === 401 || status === 403) {
-      alert("Session expired. Please login again.");
-      localStorage.removeItem("user");
-      navigate("/");
-    } else {
-      alert(`Failed to load appointments: ${message}`);
-    }
-
-    setAppointments([]);
-  }
-};
-
-  // ////////// SOCKET.IO – REAL TIME(listener) //////////////
-  useEffect(() => {
-    if (!user || !user.token) return;
-
-      const socket = io("https://hospitalmgt-backend.onrender.com", {
-    // const socket = io("http://localhost:5000", {
-                                                auth: { token: user.token }
-                                              });
-    
-    socket.on("new-appointment", (newAppointment) => {
-      console.log("New appointment received:", newAppointment);
-
-      // Get logged-in user ID from localStorage
-      const userId = localStorage.getItem("userId");
-      
-      // Check if the appointment is for the current user
-      if (newAppointment.doctorId === userId) {
-        alert(`New appointment booked for ${newAppointment.date} at ${newAppointment.time}`);
+      if (status === 401 || status === 403) {
+        alert("Session expired. Please login again.");
+        localStorage.removeItem("user");
+        navigate("/");
+      } else {
+        alert(`Failed to load appointments: ${message}`);
       }
 
-      // Optionally reload appointments regardless
-      loadAppointments();
+      setAppointments([]);
+    }
+  };
+
+  // ==========================
+  // SOCKET.IO (REAL-TIME)
+  // ==========================
+  useEffect(() => {
+    if (!user?.token) return;
+
+    const socket = io(API, {
+      auth: { token: user.token },
+    });
+
+    socket.on("new-appointment", (newAppointment) => {
+      // Check if appointment belongs to logged-in doctor
+      if (newAppointment.doctorId === user._id) {
+        alert(
+          `New appointment booked on ${newAppointment.date} at ${newAppointment.time}`
+        );
+
+        // Update UI instantly without reloading everything
+        setAppointments((prev) => [newAppointment, ...prev]);
+      }
     });
 
     socket.on("connect_error", (err) => {
@@ -96,97 +80,119 @@ function Doctor() {
     });
 
     return () => socket.disconnect();
-  }, []);
+  }, [user]);
 
-  // // UPDATE STATUS//
-  const update = async (id, status) => {
+  // ==========================
+  // UPDATE STATUS
+  // ==========================
+  const updateStatus = async (id, status) => {
     try {
-      // await axios.put(`http://localhost:5000/update-status/${id}`,
-
-      await axios.put(`${API}/update-status/${id}`,
+      await axios.put(
+        `${API}/update-status/${id}`,
         { status },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
+
       alert("Appointment updated successfully");
-      loadAppointments();
+
+      // Update UI instantly instead of reloading
+      setAppointments((prev) =>
+        prev.map((appt) =>
+          appt._id === id ? { ...appt, status } : appt
+        )
+      );
     } catch (err) {
-      console.error("Error updating appointment:", err);
       alert("Failed to update appointment.");
     }
   };
 
-  // // LOGOUT //
+  // ==========================
+  // LOGOUT
+  // ==========================
   const logout = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
 
-  const goBack = () => navigate("/");
-
-  // // UI //
+  // ==========================
+  // UI
+  // ==========================
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="absolute top-5 left-5">
-        <button onClick={goBack} 
-          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="flex justify-between mb-6">
+        <button
+          onClick={() => navigate("/")}
+          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+        >
           Back
         </button>
-      </div>
-      <div className="absolute top-5 right-5">
-        <button onClick={logout} 
-          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+
+        <button
+          onClick={logout}
+          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+        >
           Logout
         </button>
       </div>
 
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-8 mt-20">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Doctor Dashboard</h2>
+      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-8">
+        <h2 className="text-3xl font-bold text-center mb-8">
+          Doctor Dashboard
+        </h2>
 
-        <div className="space-y-6">
-          {appointments.length === 0 ? (
-            <p className="text-center text-gray-500">No appointments available.</p>
-          ) : (
-            appointments.map((a) => (
-              <div key={a._id} 
-                  className="border rounded-xl p-5 shadow-sm 
-                              hover:shadow-md transition duration-300 bg-gray-50">
+        {appointments.length === 0 ? (
+          <p className="text-center text-gray-500">
+            No appointments available.
+          </p>
+        ) : (
+          <div className="space-y-6">
+            {appointments.map((a) => (
+              <div
+                key={a._id}
+                className="border rounded-xl p-5 bg-gray-50 shadow-sm hover:shadow-md transition"
+              >
                 <div className="flex justify-between items-center">
                   <div>
-                    
-                    <p className="text-lg font-semibold text-gray-700">Dated: {a.date}</p>
-                    <p className="text-gray-600">Slot time: {a.time}</p>
+                    <p className="font-semibold">Date: {a.date}</p>
+                    <p className="text-gray-600">Time: {a.time}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    a.status === "Pending" ? "bg-yellow-100 text-yellow-700" :
-                    a.status === "Accepted" ? "bg-blue-100 text-blue-700" :
-                    a.status === "Completed" ? "bg-green-100 text-green-700" :
-                    "bg-red-100 text-red-700"
-                  }`}>
+
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      a.status === "Pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : a.status === "Accepted"
+                        ? "bg-blue-100 text-blue-700"
+                        : a.status === "Completed"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
                     {a.status}
                   </span>
                 </div>
-                {a.status !== "Completed" && a.status !== "Cancelled" && (
-                  <div className="mt-4 flex gap-3">
-                    {a.status === "Pending" && (
-                      <button onClick={() => update(a._id, "Accepted")} 
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
-                                    transition">
-                        Accept
-                      </button>
-                    )}
-                    {a.status === "Accepted" && (
-                      <button onClick={() => update(a._id, "Completed")} 
-                        className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 
-                                    transition">
-                        Complete
-                      </button>
-                    )}
-                  </div>
+
+                {a.status === "Pending" && (
+                  <button
+                    onClick={() => updateStatus(a._id, "Accepted")}
+                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                  >
+                    Accept
+                  </button>
+                )}
+
+                {a.status === "Accepted" && (
+                  <button
+                    onClick={() => updateStatus(a._id, "Completed")}
+                    className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                  >
+                    Complete
+                  </button>
                 )}
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
