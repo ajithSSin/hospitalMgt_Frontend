@@ -15,6 +15,7 @@ function Doctor() {
   // ////////// CHECK SESSION & ROLE //////////////
   //To prevents unauthorized access.
   useEffect(() => {
+    //check if user exits
     if (!user || !user.token || user.role !== "doctor") {
       alert("Unauthorized access. Please login as doctor.");
       localStorage.removeItem("user");
@@ -26,38 +27,45 @@ function Doctor() {
 
   //// LOAD APPOINTMENTS //////////
   const loadAppointments = async () => {
-    try {
-      //const res = await axios.get("http://localhost:5000/doctor-appointments", {
-
-      const res = await axios.get(`${API}/doctor-appointments`, {
-
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-
-      console.log("Appointments response:", res.data);
-
-      if (Array.isArray(res.data)) {
-        setAppointments(res.data);
-      } else {
-        // Handle all error messages from backend
-        const msg = res.data?.message || "Unknown error";
-        alert(`Failed to load appointments: ${msg}`);
-        if (msg.includes("token") || msg.includes("Access denied")) {
-          localStorage.removeItem("user");
-          navigate("/");
-        } else {
-          setAppointments([]);
-        }
-      }
-    } catch (err) {
-      console.error(" Network/Server error:", err);
-      console.log("Status:", err.response?.status);
-      console.log("Data:", err.response?.data);
-      console.log("Full error:", err);
-      alert("Failed to load appointments. Check console.");
-      setAppointments([]);
+  try {
+    // Check if user exists
+    if (!user || !user.token) {
+      navigate("/");
+      return;
     }
-  };
+
+    const res = await axios.get(`${API}/doctor-appointments`, {
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+    });
+
+    console.log("Appointments response:", res.data);
+
+    // Directly set if backend sends array
+    setAppointments(res.data);
+
+  } catch (err) {
+    console.error("Network/Server error:", err);
+
+    const status = err.response?.status;
+    const message = err.response?.data?.message || "Something went wrong";
+
+    console.log("Status:", status);
+    console.log("Message:", message);
+
+    // Handle authentication errors properly
+    if (status === 401 || status === 403) {
+      alert("Session expired. Please login again.");
+      localStorage.removeItem("user");
+      navigate("/");
+    } else {
+      alert(`Failed to load appointments: ${message}`);
+    }
+
+    setAppointments([]);
+  }
+};
 
   // ////////// SOCKET.IO – REAL TIME(listener) //////////////
   useEffect(() => {
