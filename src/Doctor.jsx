@@ -75,6 +75,8 @@ function Doctor() {
     });
 
     socket.on("connect_error", (err) => {
+      console.log(am in);
+      
       console.error("Socket connection error:", err.message);
     });
 
