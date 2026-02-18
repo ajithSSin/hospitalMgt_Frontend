@@ -67,21 +67,21 @@ function Doctor() {
     // const socket = io("http://localhost:5000", {
                                                 auth: { token: user.token }
                                               });
+    
+    socket.on("new-appointment", (newAppointment) => {
+      console.log("New appointment received:", newAppointment);
 
-socket.on("new-appointment", (newAppointment) => {
-  console.log("New appointment received:", newAppointment);
+      // Get logged-in user ID from localStorage
+      const userId = localStorage.getItem("userId");
+      
+      // Check if the appointment is for the current user
+      if (newAppointment.doctorId === userId) {
+        alert(`New appointment booked for ${newAppointment.date} at ${newAppointment.time}`);
+      }
 
-  // Get logged-in user ID from localStorage
-  const userId = localStorage.getItem("userId");
-
-  // Check if the appointment is for the current user
-  if (newAppointment.doctorId === userId) {
-    alert(`New appointment booked for ${newAppointment.date} at ${newAppointment.time}`);
-  }
-
-  // Optionally reload appointments regardless
-  loadAppointments();
-});
+      // Optionally reload appointments regardless
+      loadAppointments();
+    });
 
     socket.on("connect_error", (err) => {
       console.error("Socket connection error:", err.message);
