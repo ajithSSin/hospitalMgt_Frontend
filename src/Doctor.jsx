@@ -51,6 +51,9 @@ function Doctor() {
       }
     } catch (err) {
       console.error(" Network/Server error:", err);
+      console.log("Status:", err.response?.status);
+      console.log("Data:", err.response?.data);
+      console.log("Full error:", err);
       alert("Failed to load appointments. Check console.");
       setAppointments([]);
     }
