@@ -11,9 +11,9 @@ function Doctor() {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // ==========================
-  // CHECK AUTH & ROLE
-  // ==========================
+  
+  //////////////////////// CHECK AUTH & ROLE/////////////////////////
+  
   useEffect(() => {
     if (!user || !user.token || user.role !== "doctor") {
       alert("Unauthorized access. Please login as doctor.");
@@ -25,9 +25,9 @@ function Doctor() {
     loadAppointments();
   }, [navigate]);
 
-  // ==========================
-  // LOAD APPOINTMENTS
-  // ==========================
+
+  ///////////////////// LOAD APPOINTMENTS///////////////////
+  
   const loadAppointments = async () => {
     try {
       const res = await axios.get(`${API}/doctor-appointments`, {
@@ -53,9 +53,8 @@ function Doctor() {
     }
   };
 
-  // ==========================
   // SOCKET.IO (REAL-TIME)
-  // ==========================
+  
   useEffect(() => {
     if (!user?.token) return;
 
@@ -82,9 +81,9 @@ function Doctor() {
     return () => socket.disconnect();
   }, [user]);
 
-  // ==========================
+ 
   // UPDATE STATUS
-  // ==========================
+  
   const updateStatus = async (id, status) => {
     try {
       await axios.put(
@@ -106,17 +105,17 @@ function Doctor() {
     }
   };
 
-  // ==========================
+  
   // LOGOUT
-  // ==========================
+  
   const logout = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
 
-  // ==========================
+ 
   // UI
-  // ==========================
+  
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="flex justify-between mb-6">
@@ -175,7 +174,8 @@ function Doctor() {
                 {a.status === "Pending" && (
                   <button
                     onClick={() => updateStatus(a._id, "Accepted")}
-                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg 
+                    hover:bg-blue-600"
                   >
                     Accept
                   </button>
@@ -184,7 +184,8 @@ function Doctor() {
                 {a.status === "Accepted" && (
                   <button
                     onClick={() => updateStatus(a._id, "Completed")}
-                    className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                    className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg 
+                    hover:bg-green-600"
                   >
                     Complete
                   </button>
