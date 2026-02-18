@@ -60,21 +60,44 @@ function Doctor() {
 
     const socket = io(API, {
       auth: { token: user.token },
+      transports:["polling"],
     });
 
     socket.on("new-appointment", (newAppointment) => {
-      // Check if appointment belongs to logged-in doctor
-      if (newAppointment.doctorId === user._id) {
-        alert(
-          `New appointment booked on ${newAppointment.date} at ${newAppointment.time}`
-        );
+      try {
+        if (newAppointment.doctorId === user._id) {
+        alert(`New appointment booked on ${newAppointment.date} 
+                at ${newAppointment.time}`);
 
         // Update UI instantly without reloading everything
         setAppointments((prev) => [newAppointment, ...prev]);
       }
+      else{
+        console.log("socket.on error:");
+        
+      }
+        
+      } catch (error) {
+        console.log("socket.on error:",error);
+        
+        
+      }
+      // Check if appointment belongs to logged-in doctor
+      // if (newAppointment.doctorId === user._id) {
+      //   alert(`New appointment booked on ${newAppointment.date} 
+      //           at ${newAppointment.time}`);
+
+      //   // Update UI instantly without reloading everything
+      //   setAppointments((prev) => [newAppointment, ...prev]);
+      // }
+      // else{
+      //   console.log();
+        
+      // }
     });
 
     socket.on("connect_error", (err) => {
+      
       console.log("am in socket.on");
       
       console.error("Socket connection error:", err.message);
