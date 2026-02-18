@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const API = "https://hospitalmgt-backend.onrender.com";
 
+
 function Patient() {
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);

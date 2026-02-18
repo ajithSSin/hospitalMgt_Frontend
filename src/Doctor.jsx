@@ -5,6 +5,7 @@ import { io } from "socket.io-client";
 
 const API = "https://hospitalmgt-backend.onrender.com";
 
+
 function Doctor() {
   const [appointments, setAppointments] = useState([]);
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ function Doctor() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   // ////////// CHECK SESSION & ROLE //////////////
+  //To prevents unauthorized access.
   useEffect(() => {
     if (!user || !user.token || user.role !== "doctor") {
       alert("Unauthorized access. Please login as doctor.");
@@ -90,7 +92,7 @@ socket.on("new-appointment", (newAppointment) => {
     try {
       // await axios.put(`http://localhost:5000/update-status/${id}`,
 
-      await axios.put(`/${API}/update-status/${id}`,
+      await axios.put(`${API}/update-status/${id}`,
         { status },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
@@ -156,13 +158,15 @@ socket.on("new-appointment", (newAppointment) => {
                   <div className="mt-4 flex gap-3">
                     {a.status === "Pending" && (
                       <button onClick={() => update(a._id, "Accepted")} 
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 
+                                    transition">
                         Accept
                       </button>
                     )}
                     {a.status === "Accepted" && (
                       <button onClick={() => update(a._id, "Completed")} 
-                        className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 
+                                    transition">
                         Complete
                       </button>
                     )}
