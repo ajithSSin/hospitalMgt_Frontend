@@ -22,9 +22,13 @@ function Login() {
       });
 
       if (res.data.token) {
-        localStorage.setItem("user", JSON.stringify(res.data));
+        
+        localStorage.setItem("user", JSON.stringify(res.data));               
+
         navigate(`/${res.data.role}`);
+
       } else {
+        // console.log(res.data.message);        
         alert(res.data.message || "Login failed");
       }
     } catch (err) {

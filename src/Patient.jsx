@@ -158,7 +158,7 @@ function Patient() {
               <option value="">Select Doctor</option>
               {doctors.map((d) => (
                 <option key={d._id} value={d._id}>
-                  {d.name} - {d.specialization}
+                  {d._id}-{d.name} - {d.specialization}
                 </option>
               ))}
             </select>
